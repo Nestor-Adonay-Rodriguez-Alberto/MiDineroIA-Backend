@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MiDineroIA_Backend": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7184",
+      "launchBrowser": false
+    }
+  }
+}
