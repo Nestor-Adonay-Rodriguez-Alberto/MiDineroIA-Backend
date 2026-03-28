@@ -14,16 +14,21 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
+
+
+    // OBTENER USUARIO POR EMAIL:
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == email);
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+
+    // CREAR USUARIO:
     public async Task<User> CreateAsync(User user)
     {
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         return user;
     }
+
 }

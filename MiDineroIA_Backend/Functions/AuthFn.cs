@@ -19,9 +19,11 @@ public class AuthFn
         _logger = logger;
     }
 
+
+
+
     [Function("AuthRegister")]
-    public async Task<IActionResult> Register(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/register")] HttpRequest req)
+    public async Task<IActionResult> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/register")] HttpRequest req)
     {
         var body = await req.ReadFromJsonAsync<RegisterRequestDto>();
         if (body is null)
@@ -38,9 +40,9 @@ public class AuthFn
         }
     }
 
+
     [Function("AuthLogin")]
-    public async Task<IActionResult> Login(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequest req)
+    public async Task<IActionResult> Login([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequest req)
     {
         var body = await req.ReadFromJsonAsync<LoginRequestDto>();
         if (body is null)
@@ -56,4 +58,5 @@ public class AuthFn
             return new UnauthorizedObjectResult(new { error = ex.Message });
         }
     }
+
 }

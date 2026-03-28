@@ -20,6 +20,9 @@ public class AuthService
         _userMapper = userMapper;
     }
 
+
+
+    // REGISTRAR USUARIO:
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
     {
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
@@ -41,6 +44,8 @@ public class AuthService
         return new AuthResponseDto(token, userDto);
     }
 
+
+    // LOGIN USUARIO:
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
@@ -55,4 +60,5 @@ public class AuthService
 
         return new AuthResponseDto(token, userDto);
     }
+
 }
