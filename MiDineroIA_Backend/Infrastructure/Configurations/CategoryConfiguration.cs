@@ -10,22 +10,34 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         builder.ToTable("Categories");
 
-        builder.HasKey(c => c.Id);
+        builder.HasKey(c => c.Id)
+            .HasName("PK_Categories");
+
+        builder.Property(c => c.Id)
+            .HasColumnName("id");
 
         builder.Property(c => c.CategoryGroupId)
+            .HasColumnName("category_group_id")
             .IsRequired();
 
+        builder.Property(c => c.UserId)
+            .HasColumnName("user_id");
+
         builder.Property(c => c.Name)
+            .HasColumnName("name")
             .IsRequired()
             .HasMaxLength(100);
 
         builder.Property(c => c.IsDefault)
+            .HasColumnName("is_default")
             .HasDefaultValue(true);
 
         builder.Property(c => c.IsActive)
+            .HasColumnName("is_active")
             .HasDefaultValue(true);
 
         builder.Property(c => c.DisplayOrder)
+            .HasColumnName("display_order")
             .HasDefaultValue(0);
 
         // Foreign keys
