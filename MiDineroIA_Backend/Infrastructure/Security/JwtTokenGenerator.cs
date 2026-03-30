@@ -7,17 +7,13 @@ using MiDineroIA_Backend.Domain.Interfaces;
 
 namespace MiDineroIA_Backend.Infrastructure.Security;
 
-public class JwtTokenGenerator : ITokenGenerator
+public class JwtTokenGenerator : ITokenGenerator, ITokenValidator
 {
-    private readonly string _secret;
-    private readonly string _issuer;
-    private readonly int _expirationDays;
+    private readonly JwtSettings _settings;
 
-    public JwtTokenGenerator()
+    public JwtTokenGenerator(JwtSettings settings)
     {
-        _secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("JWT_SECRET not configured");
-        _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? throw new InvalidOperationException("JWT_ISSUER not configured");
-        _expirationDays = int.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRATION_DAYS") ?? "7");
+        _settings = settings;
     }
 
 
@@ -28,7 +24,7 @@ public class JwtTokenGenerator : ITokenGenerator
         if (user is null)
             throw new ArgumentNullException(nameof(user));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -38,10 +34,10 @@ public class JwtTokenGenerator : ITokenGenerator
         };
 
         var token = new JwtSecurityToken(
-            issuer: _issuer,
-            audience: _issuer,
+            issuer: _settings.Issuer,
+            audience: _settings.Issuer,
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(_expirationDays),
+            expires: DateTime.UtcNow.AddDays(_settings.ExpirationDays),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -57,12 +53,12 @@ public class JwtTokenGenerator : ITokenGenerator
         var parameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = _issuer,
+            ValidIssuer = _settings.Issuer,
             ValidateAudience = true,
-            ValidAudience = _issuer,
+            ValidAudience = _settings.Issuer,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret)),
             ClockSkew = TimeSpan.Zero
         };
 

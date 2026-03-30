@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using MiDineroIA_Backend.Application.DTOs;
 using MiDineroIA_Backend.Application.Exceptions;
 using MiDineroIA_Backend.Domain.Entities;
+using MiDineroIA_Backend.Application.Interfaces;
 using MiDineroIA_Backend.Domain.Interfaces;
 
 namespace MiDineroIA_Backend.Application.Services;

@@ -1,6 +1,6 @@
 using MiDineroIA_Backend.Application.DTOs;
 
-namespace MiDineroIA_Backend.Domain.Interfaces;
+namespace MiDineroIA_Backend.Application.Interfaces;
 
 public interface IAuthService
 {

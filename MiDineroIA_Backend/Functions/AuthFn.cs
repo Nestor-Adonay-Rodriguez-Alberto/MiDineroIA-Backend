@@ -4,7 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MiDineroIA_Backend.Application.DTOs;
 using MiDineroIA_Backend.Application.Exceptions;
-using MiDineroIA_Backend.Domain.Interfaces;
+using MiDineroIA_Backend.Application.Interfaces;
 
 namespace MiDineroIA_Backend.Functions;
 
@@ -19,9 +19,11 @@ public class AuthFn
         _logger = logger;
     }
 
+
+
+
     [Function("AuthRegister")]
-    public async Task<IActionResult> Register(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/register")] HttpRequest req)
+    public async Task<IActionResult> Register([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/register")] HttpRequest req)
     {
         try
         {
@@ -47,9 +49,9 @@ public class AuthFn
         }
     }
 
+
     [Function("AuthLogin")]
-    public async Task<IActionResult> Login(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequest req)
+    public async Task<IActionResult> Login([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/login")] HttpRequest req)
     {
         try
         {
@@ -74,4 +76,6 @@ public class AuthFn
             return new ObjectResult(new { error = "Error interno del servidor" }) { StatusCode = 500 };
         }
     }
+
+
 }
