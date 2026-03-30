@@ -3,12 +3,12 @@ using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MiDineroIA_Backend.Application.Mapping;
 using MiDineroIA_Backend.Application.Services;
 using MiDineroIA_Backend.CrossCutting.Auth;
 using MiDineroIA_Backend.Domain.Interfaces;
 using MiDineroIA_Backend.Infrastructure.Database;
 using MiDineroIA_Backend.Infrastructure.Repositories;
+using MiDineroIA_Backend.Infrastructure.Security;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
@@ -19,17 +19,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING")));
 
+// Security
+builder.Services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
+
 // Auth
 builder.Services.AddSingleton<JwtHelper>();
-
-// Mappers
-builder.Services.AddSingleton<UserMapper>();
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()

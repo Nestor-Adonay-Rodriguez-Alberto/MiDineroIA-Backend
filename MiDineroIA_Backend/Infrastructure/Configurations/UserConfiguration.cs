@@ -28,7 +28,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Email)
             .IsUnique()
-            .HasName("IX_Users_Email");
+            .HasDatabaseName("IX_Users_Email");
 
         builder.Property(u => u.PasswordHash)
             .HasColumnName("password_hash")

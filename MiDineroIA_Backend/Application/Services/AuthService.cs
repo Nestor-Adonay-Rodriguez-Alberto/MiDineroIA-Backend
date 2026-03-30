@@ -1,23 +1,21 @@
 using MiDineroIA_Backend.Application.DTOs;
 using MiDineroIA_Backend.Application.Exceptions;
-using MiDineroIA_Backend.Application.Mapping;
-using MiDineroIA_Backend.CrossCutting.Auth;
 using MiDineroIA_Backend.Domain.Entities;
 using MiDineroIA_Backend.Domain.Interfaces;
 
 namespace MiDineroIA_Backend.Application.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
-    private readonly JwtHelper _jwtHelper;
-    private readonly UserMapper _userMapper;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly ITokenGenerator _tokenGenerator;
 
-    public AuthService(IUserRepository userRepository, JwtHelper jwtHelper,UserMapper userMapper)
+    public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator)
     {
         _userRepository = userRepository;
-        _jwtHelper = jwtHelper;
-        _userMapper = userMapper;
+        _passwordHasher = passwordHasher;
+        _tokenGenerator = tokenGenerator;
     }
 
 
@@ -27,19 +25,23 @@ public class AuthService
     {
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
         if (existingUser is not null)
-            throw new ConflictException("El email ya esta registrado");
+            throw new ConflictException("El email ya está registrado");
 
         var user = new User
         {
             Name = request.Name,
             Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
+            PasswordHash = _passwordHasher.Hash(request.Password),
+            Currency = "USD",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
-        await _userRepository.CreateAsync(user);
+        var createdUser = await _userRepository.CreateAsync(user);
 
-        var token = _jwtHelper.GenerateToken(user);
-        var userDto = _userMapper.ToUserDto(user);
+        var token = _tokenGenerator.GenerateToken(createdUser);
+        var userDto = new UserDto(createdUser.Id, createdUser.Name, createdUser.Email);
 
         return new AuthResponseDto(token, userDto);
     }
@@ -50,15 +52,19 @@ public class AuthService
     {
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user is null)
-            throw new UnauthorizedException("Credenciales invalidas");
+            throw new UnauthorizedException("Credenciales inválidas");
 
-        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            throw new UnauthorizedException("Credenciales invalidas");
+        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
+            throw new UnauthorizedException("Credenciales inválidas");
 
-        var token = _jwtHelper.GenerateToken(user);
-        var userDto = _userMapper.ToUserDto(user);
+        if (!user.IsActive)
+            throw new UnauthorizedException("La cuenta está desactivada");
+
+        var token = _tokenGenerator.GenerateToken(user);
+        var userDto = new UserDto(user.Id, user.Name, user.Email);
 
         return new AuthResponseDto(token, userDto);
     }
+
 
 }
