@@ -10,37 +10,50 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.ToTable("Users");
 
-        builder.HasKey(u => u.Id);
+        builder.HasKey(u => u.Id)
+            .HasName("PK_Users");
+
+        builder.Property(u => u.Id)
+            .HasColumnName("id");
 
         builder.Property(u => u.Name)
+            .HasColumnName("name")
             .IsRequired()
             .HasMaxLength(100);
 
         builder.Property(u => u.Email)
+            .HasColumnName("email")
             .IsRequired()
             .HasMaxLength(255);
 
         builder.HasIndex(u => u.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("IX_Users_Email");
 
         builder.Property(u => u.PasswordHash)
+            .HasColumnName("password_hash")
             .IsRequired()
             .HasMaxLength(500);
 
         builder.Property(u => u.MonthlyIncome)
+            .HasColumnName("monthly_income")
             .HasPrecision(12, 2);
 
         builder.Property(u => u.Currency)
+            .HasColumnName("currency")
             .HasDefaultValue("USD")
             .HasMaxLength(10);
 
         builder.Property(u => u.IsActive)
+            .HasColumnName("is_active")
             .HasDefaultValue(true);
 
         builder.Property(u => u.CreatedAt)
+            .HasColumnName("created_at")
             .HasDefaultValueSql("GETUTCDATE()");
 
         builder.Property(u => u.UpdatedAt)
+            .HasColumnName("updated_at")
             .HasDefaultValueSql("GETUTCDATE()");
 
         // Navigation properties

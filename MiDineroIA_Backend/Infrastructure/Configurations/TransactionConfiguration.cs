@@ -10,39 +10,56 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
     {
         builder.ToTable("Transactions");
 
-        builder.HasKey(t => t.Id);
+        builder.HasKey(t => t.Id)
+            .HasName("PK_Transactions");
+
+        builder.Property(t => t.Id)
+            .HasColumnName("id");
 
         builder.Property(t => t.UserId)
+            .HasColumnName("user_id")
             .IsRequired();
 
         builder.Property(t => t.CategoryId)
+            .HasColumnName("category_id")
             .IsRequired();
 
+        builder.Property(t => t.ChatMessageId)
+            .HasColumnName("chat_message_id");
+
         builder.Property(t => t.Amount)
+            .HasColumnName("amount")
             .HasPrecision(12, 2)
             .IsRequired();
 
         builder.Property(t => t.Description)
+            .HasColumnName("description")
             .HasMaxLength(500);
 
         builder.Property(t => t.Merchant)
+            .HasColumnName("merchant")
             .HasMaxLength(200);
 
         builder.Property(t => t.TransactionDate)
+            .HasColumnName("transaction_date")
             .HasColumnType("date")
             .IsRequired();
 
         builder.Property(t => t.Source)
+            .HasColumnName("source")
             .HasDefaultValue("TEXT")
             .HasMaxLength(20);
 
         builder.Property(t => t.IsConfirmed)
+            .HasColumnName("is_confirmed")
             .HasDefaultValue(true);
 
         builder.Property(t => t.CreatedAt)
+            .HasColumnName("created_at")
             .HasDefaultValueSql("GETUTCDATE()");
 
         builder.Property(t => t.UpdatedAt)
+            .HasColumnName("updated_at")
             .HasDefaultValueSql("GETUTCDATE()");
 
         // Foreign keys
