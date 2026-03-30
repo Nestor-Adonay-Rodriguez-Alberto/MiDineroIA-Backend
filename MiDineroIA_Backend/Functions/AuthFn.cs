@@ -32,6 +32,10 @@ public class AuthFn
             var result = await _authService.RegisterAsync(request);
             return new OkObjectResult(result);
         }
+        catch (ValidationException ex)
+        {
+            return new BadRequestObjectResult(new { error = ex.Message });
+        }
         catch (ConflictException ex)
         {
             return new ConflictObjectResult(new { error = ex.Message });
@@ -55,6 +59,10 @@ public class AuthFn
 
             var result = await _authService.LoginAsync(request);
             return new OkObjectResult(result);
+        }
+        catch (ValidationException ex)
+        {
+            return new BadRequestObjectResult(new { error = ex.Message });
         }
         catch (UnauthorizedException ex)
         {

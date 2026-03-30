@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using MiDineroIA_Backend.Application.DTOs;
 using MiDineroIA_Backend.Application.Exceptions;
 using MiDineroIA_Backend.Domain.Entities;
@@ -11,6 +12,8 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenGenerator _tokenGenerator;
 
+    private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
+
     public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator)
     {
         _userRepository = userRepository;
@@ -23,19 +26,19 @@ public class AuthService : IAuthService
     // REGISTRAR USUARIO:
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
     {
-        var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+        ValidateRegisterRequest(request);
+
+        var email = request.Email.Trim().ToLowerInvariant();
+
+        var existingUser = await _userRepository.GetByEmailAsync(email);
         if (existingUser is not null)
             throw new ConflictException("El email ya está registrado");
 
         var user = new User
         {
-            Name = request.Name,
-            Email = request.Email,
+            Name = request.Name.Trim(),
+            Email = email,
             PasswordHash = _passwordHasher.Hash(request.Password),
-            Currency = "USD",
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
 
         var createdUser = await _userRepository.CreateAsync(user);
@@ -50,7 +53,11 @@ public class AuthService : IAuthService
     // LOGIN USUARIO:
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        ValidateLoginRequest(request);
+
+        var email = request.Email.Trim().ToLowerInvariant();
+
+        var user = await _userRepository.GetByEmailAsync(email);
         if (user is null)
             throw new UnauthorizedException("Credenciales inválidas");
 
@@ -67,4 +74,45 @@ public class AuthService : IAuthService
     }
 
 
+    // VALIDACIONES PRIVADAS:
+    private static void ValidateRegisterRequest(RegisterRequestDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ValidationException("El nombre es requerido");
+
+        if (request.Name.Trim().Length < 2)
+            throw new ValidationException("El nombre debe tener mínimo 2 caracteres");
+
+        if (request.Name.Trim().Length > 100)
+            throw new ValidationException("El nombre no puede exceder 100 caracteres");
+
+        ValidateEmail(request.Email);
+        ValidatePassword(request.Password);
+    }
+
+    private static void ValidateLoginRequest(LoginRequestDto request)
+    {
+        ValidateEmail(request.Email);
+
+        if (string.IsNullOrWhiteSpace(request.Password))
+            throw new ValidationException("La contraseña es requerida");
+    }
+
+    private static void ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ValidationException("El email es requerido");
+
+        if (!EmailRegex.IsMatch(email.Trim()))
+            throw new ValidationException("El formato del email es inválido");
+    }
+
+    private static void ValidatePassword(string password)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ValidationException("La contraseña es requerida");
+
+        if (password.Length < 8)
+            throw new ValidationException("La contraseña debe tener mínimo 8 caracteres");
+    }
 }
