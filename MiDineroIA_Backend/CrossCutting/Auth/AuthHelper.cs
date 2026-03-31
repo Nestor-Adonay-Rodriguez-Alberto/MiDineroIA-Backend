@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using MiDineroIA_Backend.Domain.Interfaces;
 
@@ -31,7 +32,9 @@ public static class AuthHelper
             return null;
         }
 
-        var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        // El claim "sub" se mapea a ClaimTypes.NameIdentifier o puede estar como JwtRegisteredClaimNames.Sub
+        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             return null;
