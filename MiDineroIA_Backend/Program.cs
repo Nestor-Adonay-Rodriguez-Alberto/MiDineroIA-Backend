@@ -7,6 +7,7 @@ using MiDineroIA_Backend.Application.Interfaces;
 using MiDineroIA_Backend.Application.Services;
 using MiDineroIA_Backend.Domain.Interfaces;
 using MiDineroIA_Backend.Infrastructure.Database;
+using MiDineroIA_Backend.Infrastructure.ExternalServices;
 using MiDineroIA_Backend.Infrastructure.Repositories;
 using MiDineroIA_Backend.Infrastructure.Security;
 
@@ -30,6 +31,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// External Services (HttpClient)
+builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
 
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
