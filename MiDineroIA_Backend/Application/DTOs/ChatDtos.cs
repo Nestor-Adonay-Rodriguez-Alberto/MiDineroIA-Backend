@@ -3,6 +3,14 @@ using System.Text.Json.Serialization;
 namespace MiDineroIA_Backend.Application.DTOs;
 
 /// <summary>
+/// Request para enviar un mensaje al chat.
+/// </summary>
+public record ChatRequestDto(
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("image_base64")] string? ImageBase64
+);
+
+/// <summary>
 /// Respuesta principal del ChatService después de procesar un mensaje.
 /// </summary>
 public record ChatResponseDto
