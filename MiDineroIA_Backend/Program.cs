@@ -35,6 +35,7 @@ builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 // External Services (HttpClient)
 builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
