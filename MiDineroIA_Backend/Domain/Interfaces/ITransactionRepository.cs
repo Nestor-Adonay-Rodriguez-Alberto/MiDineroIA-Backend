@@ -47,4 +47,13 @@ public interface ITransactionRepository
     /// <param name="userId">Id del usuario dueño.</param>
     /// <returns>True si se confirmó, false si no existía.</returns>
     Task<bool> ConfirmAsync(int id, int userId);
+
+    /// <summary>
+    /// Obtiene el resumen de transacciones de un mes.
+    /// </summary>
+    /// <param name="userId">Id del usuario.</param>
+    /// <param name="year">Año.</param>
+    /// <param name="month">Mes (1-12).</param>
+    /// <returns>Tupla con (totalIngresos, totalEgresos).</returns>
+    Task<(decimal TotalIncome, decimal TotalExpenses)> GetMonthlySummaryAsync(int userId, int year, int month);
 }

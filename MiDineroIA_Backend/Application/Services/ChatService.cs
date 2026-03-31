@@ -74,7 +74,7 @@ public class ChatService : IChatService
 
                 case IntentTypes.GENERAL_QUERY:
                 default:
-                    response = HandleGeneralQuery(claudeResponse);
+                    response = await HandleGeneralQueryAsync(userId, claudeResponse);
                     break;
             }
 
@@ -229,16 +229,82 @@ public class ChatService : IChatService
         };
     }
 
-    private static ChatResponseDto HandleGeneralQuery(ClaudeResponseDto claudeResponse)
+    private async Task<ChatResponseDto> HandleGeneralQueryAsync(int userId, ClaudeResponseDto claudeResponse)
     {
         var queryData = claudeResponse.GetQueryData();
+        var queryType = queryData?.QueryType ?? "UNKNOWN";
 
+        // Si es MONTHLY_SUMMARY, consultar datos reales
+        if (queryType == "MONTHLY_SUMMARY")
+        {
+            var now = DateTime.UtcNow;
+            var (totalIncome, totalExpenses) = await _transactionRepository.GetMonthlySummaryAsync(
+                userId, now.Year, now.Month);
+            
+            var balance = totalIncome - totalExpenses;
+            var monthName = GetSpanishMonthName(now.Month);
+
+            string message;
+            if (totalIncome == 0 && totalExpenses == 0)
+            {
+                message = $"No tienes transacciones registradas en {monthName} todavía.";
+            }
+            else
+            {
+                message = $"📊 Tu resumen de {monthName}:\n" +
+                         $"• Ingresos: ${totalIncome:N2}\n" +
+                         $"• Gastos: ${totalExpenses:N2}\n" +
+                         $"• Balance: ${balance:N2}";
+                
+                if (balance < 0)
+                {
+                    message += "\n\n⚠️ ¡Cuidado! Tus gastos superan tus ingresos este mes.";
+                }
+            }
+
+            return new ChatResponseDto
+            {
+                Intent = IntentTypes.GENERAL_QUERY,
+                Message = message,
+                Data = new MonthlySummaryDataDto
+                {
+                    Year = now.Year,
+                    Month = now.Month,
+                    TotalIncome = totalIncome,
+                    TotalExpenses = totalExpenses,
+                    Balance = balance
+                },
+                NeedsConfirmation = false
+            };
+        }
+
+        // Para otros tipos de query, devolver la respuesta de Claude
         return new ChatResponseDto
         {
             Intent = IntentTypes.GENERAL_QUERY,
             Message = claudeResponse.Message,
-            Data = new QueryDataDto(queryData?.QueryType ?? "UNKNOWN"),
+            Data = new QueryDataDto(queryType),
             NeedsConfirmation = false
+        };
+    }
+
+    private static string GetSpanishMonthName(int month)
+    {
+        return month switch
+        {
+            1 => "enero",
+            2 => "febrero",
+            3 => "marzo",
+            4 => "abril",
+            5 => "mayo",
+            6 => "junio",
+            7 => "julio",
+            8 => "agosto",
+            9 => "septiembre",
+            10 => "octubre",
+            11 => "noviembre",
+            12 => "diciembre",
+            _ => "este mes"
         };
     }
 

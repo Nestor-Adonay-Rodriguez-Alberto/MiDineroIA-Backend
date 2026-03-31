@@ -147,3 +147,27 @@ public record ChatMessageDto
 public record QueryDataDto(
     [property: JsonPropertyName("query_type")] string QueryType
 );
+
+/// <summary>
+/// Resumen mensual de ingresos y gastos.
+/// </summary>
+public record MonthlySummaryDataDto
+{
+    [JsonPropertyName("query_type")]
+    public string QueryType { get; init; } = "MONTHLY_SUMMARY";
+
+    [JsonPropertyName("year")]
+    public int Year { get; init; }
+
+    [JsonPropertyName("month")]
+    public int Month { get; init; }
+
+    [JsonPropertyName("total_income")]
+    public decimal TotalIncome { get; init; }
+
+    [JsonPropertyName("total_expenses")]
+    public decimal TotalExpenses { get; init; }
+
+    [JsonPropertyName("balance")]
+    public decimal Balance { get; init; }
+}

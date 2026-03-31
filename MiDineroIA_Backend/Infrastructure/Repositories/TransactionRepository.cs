@@ -77,4 +77,31 @@ public class TransactionRepository : ITransactionRepository
     }
 
 
+    // OBTIENE EL RESUMEN MENSUAL DE TRANSACCIONES:
+    public async Task<(decimal TotalIncome, decimal TotalExpenses)> GetMonthlySummaryAsync(int userId, int year, int month)
+    {
+        var startDate = new DateTime(year, month, 1);
+        var endDate = startDate.AddMonths(1);
+
+        var transactions = await _context.Transactions
+            .Include(t => t.Category)
+                .ThenInclude(c => c.CategoryGroup)
+            .Where(t => t.UserId == userId 
+                && t.IsConfirmed 
+                && t.TransactionDate >= startDate 
+                && t.TransactionDate < endDate)
+            .ToListAsync();
+
+        var totalIncome = transactions
+            .Where(t => t.Category?.CategoryGroup?.TransactionType == "INGRESO")
+            .Sum(t => t.Amount);
+
+        var totalExpenses = transactions
+            .Where(t => t.Category?.CategoryGroup?.TransactionType == "EGRESO")
+            .Sum(t => t.Amount);
+
+        return (totalIncome, totalExpenses);
+    }
+
+
 }
