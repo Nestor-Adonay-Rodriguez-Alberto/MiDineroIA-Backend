@@ -7,6 +7,7 @@ using MiDineroIA_Backend.Application.Interfaces;
 using MiDineroIA_Backend.Application.Services;
 using MiDineroIA_Backend.Domain.Interfaces;
 using MiDineroIA_Backend.Infrastructure.Database;
+using MiDineroIA_Backend.Infrastructure.ExternalServices;
 using MiDineroIA_Backend.Infrastructure.Repositories;
 using MiDineroIA_Backend.Infrastructure.Security;
 
@@ -27,9 +28,22 @@ builder.Services.AddSingleton<ITokenValidator>(sp => sp.GetRequiredService<JwtTo
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+
+// External Services (HttpClient)
+builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
+builder.Services.AddHttpClient<IOcrService, OcrService>();
+
+// External Services (Blob Storage)
+builder.Services.AddSingleton<IBlobService, BlobService>();
 
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
