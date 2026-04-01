@@ -144,7 +144,9 @@ Respuesta JSON:
 {
   "intent": "GENERAL_QUERY",
   "data": {
-    "query_type": "GREETING" | "MONTHLY_SUMMARY" | "BUDGET_STATUS" | "TOP_EXPENSES" | "CATEGORY_DETAIL" | "HELP" | "UNCLEAR"
+    "query_type": "GREETING" | "MONTHLY_SUMMARY" | "BUDGET_STATUS" | "TOP_EXPENSES" | "CATEGORY_DETAIL" | "HELP" | "UNCLEAR",
+    "category_id": <id de la categoría, solo para BUDGET_STATUS y CATEGORY_DETAIL>,
+    "category_name": "<nombre de la categoría, solo para BUDGET_STATUS y CATEGORY_DETAIL>"
   },
   "message": "<respuesta amigable al usuario>"
 }
@@ -152,9 +154,9 @@ Respuesta JSON:
 Query types:
 - GREETING: Saludos ("hola", "buenos días")
 - MONTHLY_SUMMARY: Preguntas sobre resumen del mes ("cómo voy este mes?")
-- BUDGET_STATUS: Estado del presupuesto ("cuánto me queda de despensa?")
+- BUDGET_STATUS: Estado del presupuesto ("cuánto me queda de despensa?"). IMPORTANTE: incluir category_id y category_name en data
 - TOP_EXPENSES: Gastos principales ("en qué he gastado más?")
-- CATEGORY_DETAIL: Detalle de categoría específica ("cuánto he gastado en comidas?")
+- CATEGORY_DETAIL: Detalle de categoría específica ("cuánto he gastado en comidas?"). IMPORTANTE: incluir category_id y category_name en data
 - HELP: Preguntas de ayuda ("qué puedes hacer?", "cómo funciona esto?")
 - UNCLEAR: Mensaje ambiguo que necesita clarificación
 

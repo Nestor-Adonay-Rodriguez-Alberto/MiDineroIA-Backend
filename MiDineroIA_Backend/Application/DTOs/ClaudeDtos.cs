@@ -142,6 +142,12 @@ public record ClaudeQueryData
 {
     [JsonPropertyName("query_type")]
     public string QueryType { get; init; } = string.Empty;
+
+    [JsonPropertyName("category_id")]
+    public int? CategoryId { get; init; }
+
+    [JsonPropertyName("category_name")]
+    public string? CategoryName { get; init; }
 }
 
 /// <summary>

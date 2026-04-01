@@ -47,6 +47,9 @@ public class ChatService : IChatService
         _logger = logger;
     }
 
+
+
+    // #1: ORQUESTADOR PRINCIPAL PARA PROCESAR MENSAJES DEL CHAT:
     public async Task<ChatResponseDto> ProcessMessageAsync(int userId, string message, string? imageBase64)
     {
         try
@@ -75,6 +78,7 @@ public class ChatService : IChatService
     }
 
 
+    // #2: FLUJO COMPLETO PARA MENSAJES DE TEXTO: GUARDAR → CLAUDE → EJECUTAR ACCIÓN SEGÚN INTENT → GUARDAR RESPUESTA
     private async Task<ChatResponseDto> ProcessTextMessageAsync(int userId, string message)
     {
         // 1. Obtener fecha actual y categorías
@@ -122,6 +126,7 @@ public class ChatService : IChatService
     }
 
 
+    // #3: FLUJO COMPLETO PARA MENSAJES CON IMAGEN: VALIDAR → SUBIR A BLOB → OCR → CLAUDE → GUARDAR TRANSACCIÓN Y RECIBO
     private async Task<ChatResponseDto> ProcessImageMessageAsync(int userId, string message, string imageBase64)
     {
         string? blobUrl = null;
@@ -297,6 +302,7 @@ public class ChatService : IChatService
     }
 
 
+    // #4: MÉTODO AUXILIAR PARA GUARDAR RESPUESTA DE LA IA EN LA BASE DE DATOS
     private async Task SaveAiResponse(int userId, string message)
     {
         var aiMessage = new ChatMessage
@@ -310,6 +316,8 @@ public class ChatService : IChatService
     }
 
 
+
+    // MÉTODO AUXILIAR PARA CREAR RESPUESTA DE ERROR EN FLUJO DE IMAGEN
     private static ChatResponseDto CreateImageErrorResponse(string message)
     {
         return new ChatResponseDto
@@ -321,6 +329,8 @@ public class ChatService : IChatService
         };
     }
 
+
+    // MÉTODO PARA OBTENER HISTÓRICO DE CHAT
     public async Task<List<ChatMessageDto>> GetHistoryAsync(int userId, int page, int pageSize)
     {
         var messages = await _chatRepository.GetHistoryAsync(userId, page, pageSize);
@@ -335,6 +345,8 @@ public class ChatService : IChatService
         }).ToList();
     }
 
+
+    // MÉTODO AUXILIAR PARA PROCESAR REGISTRO DE TRANSACCIÓN SEGÚN RESPUESTA DE CLAUDE
     private async Task<ChatResponseDto> HandleRegisterTransaction(int userId, int chatMessageId, ClaudeResponseDto claudeResponse, string source)
     {
         var transactionData = claudeResponse.GetTransactionData();
@@ -404,6 +416,8 @@ public class ChatService : IChatService
         };
     }
 
+
+    // MÉTODO AUXILIAR PARA PROCESAR CONFIGURACIÓN DE PRESUPUESTO SEGÚN RESPUESTA DE CLAUDE
     private async Task<ChatResponseDto> HandleSetBudget(int userId, ClaudeResponseDto claudeResponse)
     {
         var budgetData = claudeResponse.GetBudgetData();
@@ -446,6 +460,8 @@ public class ChatService : IChatService
         };
     }
 
+
+    // MÉTODO AUXILIAR PARA PROCESAR CONSULTAS GENERALES SEGÚN RESPUESTA DE CLAUDE (EJ: RESUMEN MENSUAL, ESTADO DE PRESUPUESTO, DETALLE DE CATEGORÍA)
     private async Task<ChatResponseDto> HandleGeneralQueryAsync(int userId, ClaudeResponseDto claudeResponse)
     {
         var queryData = claudeResponse.GetQueryData();
@@ -495,6 +511,96 @@ public class ChatService : IChatService
             };
         }
 
+        // Si es BUDGET_STATUS, consultar datos reales del presupuesto
+        if (queryType == "BUDGET_STATUS" && queryData?.CategoryId > 0)
+        {
+            var now = DateTime.UtcNow;
+            var budgetStatus = await _budgetRepository.GetBudgetStatusAsync(
+                userId, queryData.CategoryId.Value, now.Year, now.Month);
+
+            var categoryName = queryData.CategoryName ?? "la categoría";
+            var monthName = GetSpanishMonthName(now.Month);
+
+            string message;
+            if (budgetStatus.Budget == 0)
+            {
+                if (budgetStatus.Spent > 0)
+                {
+                    message = $"No tienes presupuesto definido para {categoryName} en {monthName}, pero llevas gastado ${budgetStatus.Spent:N2}.";
+                }
+                else
+                {
+                    message = $"No tienes presupuesto definido para {categoryName} en {monthName} y no tienes gastos registrados.";
+                }
+            }
+            else
+            {
+                message = $"📊 Presupuesto de {categoryName} en {monthName}:\n" +
+                         $"• Presupuesto: ${budgetStatus.Budget:N2}\n" +
+                         $"• Gastado: ${budgetStatus.Spent:N2}\n" +
+                         $"• Restante: ${budgetStatus.Remaining:N2}";
+
+                if (budgetStatus.Remaining < 0)
+                {
+                    message += $"\n\n⚠️ ¡Cuidado! Te has excedido por ${Math.Abs(budgetStatus.Remaining):N2}.";
+                }
+                else if (budgetStatus.Remaining < budgetStatus.Budget * 0.2m)
+                {
+                    message += "\n\n⚠️ Te queda menos del 20% de tu presupuesto.";
+                }
+            }
+
+            return new ChatResponseDto
+            {
+                Intent = IntentTypes.GENERAL_QUERY,
+                Message = message,
+                Data = new QueryDataDto(queryType),
+                NeedsConfirmation = false,
+                BudgetInfo = budgetStatus.Budget > 0
+                    ? new BudgetInfoDto(budgetStatus.Budget, budgetStatus.Spent, budgetStatus.Remaining)
+                    : null
+            };
+        }
+
+        // Si es CATEGORY_DETAIL, consultar gasto real de la categoría
+        if (queryType == "CATEGORY_DETAIL" && queryData?.CategoryId > 0)
+        {
+            var now = DateTime.UtcNow;
+            var budgetStatus = await _budgetRepository.GetBudgetStatusAsync(
+                userId, queryData.CategoryId.Value, now.Year, now.Month);
+
+            var categoryName = queryData.CategoryName ?? "la categoría";
+            var monthName = GetSpanishMonthName(now.Month);
+
+            string message;
+            if (budgetStatus.Spent == 0)
+            {
+                message = $"No tienes gastos registrados en {categoryName} durante {monthName}.";
+            }
+            else
+            {
+                message = $"📊 Detalle de {categoryName} en {monthName}:\n" +
+                         $"• Gastado: ${budgetStatus.Spent:N2}";
+
+                if (budgetStatus.Budget > 0)
+                {
+                    message += $"\n• Presupuesto: ${budgetStatus.Budget:N2}" +
+                              $"\n• Restante: ${budgetStatus.Remaining:N2}";
+                }
+            }
+
+            return new ChatResponseDto
+            {
+                Intent = IntentTypes.GENERAL_QUERY,
+                Message = message,
+                Data = new QueryDataDto(queryType),
+                NeedsConfirmation = false,
+                BudgetInfo = budgetStatus.Budget > 0
+                    ? new BudgetInfoDto(budgetStatus.Budget, budgetStatus.Spent, budgetStatus.Remaining)
+                    : null
+            };
+        }
+
         // Para otros tipos de query, devolver la respuesta de Claude
         return new ChatResponseDto
         {
@@ -505,6 +611,8 @@ public class ChatService : IChatService
         };
     }
 
+
+    // MÉTODO AUXILIAR PARA OBTENER NOMBRE DEL MES EN ESPAÑOL
     private static string GetSpanishMonthName(int month)
     {
         return month switch
@@ -525,6 +633,8 @@ public class ChatService : IChatService
         };
     }
 
+
+    // MÉTODO AUXILIAR PARA CREAR RESPUESTA DE ERROR GENERAL
     private static ChatResponseDto CreateErrorResponse(string message)
     {
         return new ChatResponseDto
@@ -535,4 +645,5 @@ public class ChatService : IChatService
             NeedsConfirmation = false
         };
     }
+
 }
