@@ -39,6 +39,7 @@ builder.Services.AddScoped<IChatService, ChatService>();
 
 // External Services (HttpClient)
 builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
+builder.Services.AddHttpClient<IOcrService, OcrService>();
 
 // External Services (Blob Storage)
 builder.Services.AddSingleton<IBlobService, BlobService>();
