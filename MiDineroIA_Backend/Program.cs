@@ -32,6 +32,7 @@ builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
+builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
