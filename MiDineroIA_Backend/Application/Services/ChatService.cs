@@ -495,6 +495,96 @@ public class ChatService : IChatService
             };
         }
 
+        // Si es BUDGET_STATUS, consultar datos reales del presupuesto
+        if (queryType == "BUDGET_STATUS" && queryData?.CategoryId > 0)
+        {
+            var now = DateTime.UtcNow;
+            var budgetStatus = await _budgetRepository.GetBudgetStatusAsync(
+                userId, queryData.CategoryId.Value, now.Year, now.Month);
+
+            var categoryName = queryData.CategoryName ?? "la categoría";
+            var monthName = GetSpanishMonthName(now.Month);
+
+            string message;
+            if (budgetStatus.Budget == 0)
+            {
+                if (budgetStatus.Spent > 0)
+                {
+                    message = $"No tienes presupuesto definido para {categoryName} en {monthName}, pero llevas gastado ${budgetStatus.Spent:N2}.";
+                }
+                else
+                {
+                    message = $"No tienes presupuesto definido para {categoryName} en {monthName} y no tienes gastos registrados.";
+                }
+            }
+            else
+            {
+                message = $"📊 Presupuesto de {categoryName} en {monthName}:\n" +
+                         $"• Presupuesto: ${budgetStatus.Budget:N2}\n" +
+                         $"• Gastado: ${budgetStatus.Spent:N2}\n" +
+                         $"• Restante: ${budgetStatus.Remaining:N2}";
+
+                if (budgetStatus.Remaining < 0)
+                {
+                    message += $"\n\n⚠️ ¡Cuidado! Te has excedido por ${Math.Abs(budgetStatus.Remaining):N2}.";
+                }
+                else if (budgetStatus.Remaining < budgetStatus.Budget * 0.2m)
+                {
+                    message += "\n\n⚠️ Te queda menos del 20% de tu presupuesto.";
+                }
+            }
+
+            return new ChatResponseDto
+            {
+                Intent = IntentTypes.GENERAL_QUERY,
+                Message = message,
+                Data = new QueryDataDto(queryType),
+                NeedsConfirmation = false,
+                BudgetInfo = budgetStatus.Budget > 0
+                    ? new BudgetInfoDto(budgetStatus.Budget, budgetStatus.Spent, budgetStatus.Remaining)
+                    : null
+            };
+        }
+
+        // Si es CATEGORY_DETAIL, consultar gasto real de la categoría
+        if (queryType == "CATEGORY_DETAIL" && queryData?.CategoryId > 0)
+        {
+            var now = DateTime.UtcNow;
+            var budgetStatus = await _budgetRepository.GetBudgetStatusAsync(
+                userId, queryData.CategoryId.Value, now.Year, now.Month);
+
+            var categoryName = queryData.CategoryName ?? "la categoría";
+            var monthName = GetSpanishMonthName(now.Month);
+
+            string message;
+            if (budgetStatus.Spent == 0)
+            {
+                message = $"No tienes gastos registrados en {categoryName} durante {monthName}.";
+            }
+            else
+            {
+                message = $"📊 Detalle de {categoryName} en {monthName}:\n" +
+                         $"• Gastado: ${budgetStatus.Spent:N2}";
+
+                if (budgetStatus.Budget > 0)
+                {
+                    message += $"\n• Presupuesto: ${budgetStatus.Budget:N2}" +
+                              $"\n• Restante: ${budgetStatus.Remaining:N2}";
+                }
+            }
+
+            return new ChatResponseDto
+            {
+                Intent = IntentTypes.GENERAL_QUERY,
+                Message = message,
+                Data = new QueryDataDto(queryType),
+                NeedsConfirmation = false,
+                BudgetInfo = budgetStatus.Budget > 0
+                    ? new BudgetInfoDto(budgetStatus.Budget, budgetStatus.Spent, budgetStatus.Remaining)
+                    : null
+            };
+        }
+
         // Para otros tipos de query, devolver la respuesta de Claude
         return new ChatResponseDto
         {
