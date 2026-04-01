@@ -40,6 +40,9 @@ builder.Services.AddScoped<IChatService, ChatService>();
 // External Services (HttpClient)
 builder.Services.AddHttpClient<IClaudeService, ClaudeService>();
 
+// External Services (Blob Storage)
+builder.Services.AddSingleton<IBlobService, BlobService>();
+
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
