@@ -566,8 +566,7 @@ public class ChatService : IChatService
         if (queryType == "CATEGORY_DETAIL" && queryData?.CategoryId > 0)
         {
             var now = DateTime.UtcNow;
-            var budgetStatus = await _budgetRepository.GetBudgetStatusAsync(
-                userId, queryData.CategoryId.Value, now.Year, now.Month);
+            var budgetStatus = await _budgetRepository.GetBudgetStatusAsync(userId, queryData.CategoryId.Value, now.Year, now.Month);
 
             var categoryName = queryData.CategoryName ?? "la categoría";
             var monthName = GetSpanishMonthName(now.Month);

@@ -16,7 +16,7 @@ public class DashboardService : IDashboardService
 
 
 
-    // ESTE METODO ES EL CORAZÓN DEL SERVICIO, AQUÍ SE OBTIENEN LOS DATOS DE LA BASE DE DATOS Y SE TRANSFORMAN EN LOS DTOs QUE EL FRONTEND NECESITA PARA MOSTRAR EL DASHBOARD
+    // ESTE METODO ES EL CORAZï¿½N DEL SERVICIO, AQUï¿½ SE OBTIENEN LOS DATOS DE LA BASE DE DATOS Y SE TRANSFORMAN EN LOS DTOs QUE EL FRONTEND NECESITA PARA MOSTRAR EL DASHBOARD
     public async Task<DashboardResponseDto> GetDashboardAsync(int userId, int year, int month)
     {
         var summaryData = await _dashboardRepository.GetMonthlySummariesAsync(userId, year, month);
@@ -33,7 +33,7 @@ public class DashboardService : IDashboardService
     }
 
 
-    // Métodos privados para transformar los datos crudos de la base de datos en los DTOs que el frontend necesita
+    // Mï¿½todos privados para transformar los datos crudos de la base de datos en los DTOs que el frontend necesita
     private static SummaryDto BuildSummary(List<MonthlySummaryView> summaryData)
     {
         if (summaryData.Count == 0)
@@ -63,13 +63,14 @@ public class DashboardService : IDashboardService
     }
 
 
-    // Construye la lista de detalles de ingresos, filtrando solo las categorías que son ingresos
+    // Construye la lista de detalles de ingresos, filtrando solo las categorï¿½as que son ingresos
     private static List<CategoryBudgetRealDto> BuildIncomeDetail(List<CategoryDetailView> details)
     {
         return details
             .Where(d => d.TransactionType == "INGRESO")
             .Select(d => new CategoryBudgetRealDto
             {
+                CategoryId = d.CategoryId,
                 Category = d.CategoryName,
                 Budget = d.BudgetAmount,
                 Real = d.RealAmount
@@ -78,7 +79,7 @@ public class DashboardService : IDashboardService
     }
 
 
-    // Agrupa los detalles de gastos por grupo, creando una estructura que el frontend puede usar para mostrar los grupos de gastos y sus categorías
+    // Agrupa los detalles de gastos por grupo, creando una estructura que el frontend puede usar para mostrar los grupos de gastos y sus categorï¿½as
     private static List<ExpenseGroupDto> BuildExpenseGroups(List<CategoryDetailView> details)
     {
         return details
@@ -89,6 +90,7 @@ public class DashboardService : IDashboardService
                 GroupName = g.Key,
                 Categories = g.Select(c => new CategoryBudgetRealDto
                 {
+                    CategoryId = c.CategoryId,
                     Category = c.CategoryName,
                     Budget = c.BudgetAmount,
                     Real = c.RealAmount
@@ -98,7 +100,7 @@ public class DashboardService : IDashboardService
     }
 
 
-    // Construye la lista de distribución de gastos, transformando los datos crudos en el formato que el frontend necesita para mostrar la distribución de gastos por grupo
+    // Construye la lista de distribuciï¿½n de gastos, transformando los datos crudos en el formato que el frontend necesita para mostrar la distribuciï¿½n de gastos por grupo
     private static List<ExpenseDistributionDto> BuildExpenseDistribution(List<ExpenseDistributionView> data)
     {
         return data.Select(e => new ExpenseDistributionDto
