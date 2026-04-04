@@ -23,6 +23,9 @@ public class CategoryDetailView
     [Column("transaction_type")]
     public string TransactionType { get; set; } = string.Empty;
     
+    [Column("category_id")]
+    public int CategoryId { get; set; }
+
     [Column("category_name")]
     public string CategoryName { get; set; } = string.Empty;
     

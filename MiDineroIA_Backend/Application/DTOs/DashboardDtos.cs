@@ -40,6 +40,9 @@ public class SummaryDto
 /// </summary>
 public class CategoryBudgetRealDto
 {
+    [JsonPropertyName("category_id")]
+    public int CategoryId { get; set; }
+
     [JsonPropertyName("category")]
     public string Category { get; set; } = string.Empty;
 

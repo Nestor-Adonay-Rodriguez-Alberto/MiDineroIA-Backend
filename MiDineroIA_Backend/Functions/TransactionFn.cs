@@ -17,23 +17,21 @@ public class TransactionFn
     private readonly ITokenValidator _tokenValidator;
     private readonly ILogger<TransactionFn> _logger;
 
-    public TransactionFn(
-        ITransactionRepository transactionRepository,
-        ITokenValidator tokenValidator,
-        ILogger<TransactionFn> logger)
+    public TransactionFn(ITransactionRepository transactionRepository, ITokenValidator tokenValidator, ILogger<TransactionFn> logger)
     {
         _transactionRepository = transactionRepository;
         _tokenValidator = tokenValidator;
         _logger = logger;
     }
 
+
+
+
     /// <summary>
     /// PUT /api/transactions/{id}/confirm — Confirma una transacción pendiente.
     /// </summary>
     [Function("TransactionConfirm")]
-    public async Task<IActionResult> Confirm(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "transactions/{id}/confirm")] HttpRequest req,
-        int id)
+    public async Task<IActionResult> Confirm([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "transactions/{id}/confirm")] HttpRequest req,int id)
     {
         try
         {
@@ -73,13 +71,12 @@ public class TransactionFn
         }
     }
 
+
     /// <summary>
     /// PUT /api/transactions/{id} — Actualiza una transacción y la marca como confirmada.
     /// </summary>
     [Function("TransactionUpdate")]
-    public async Task<IActionResult> Update(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "transactions/{id}")] HttpRequest req,
-        int id)
+    public async Task<IActionResult> Update([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "transactions/{id}")] HttpRequest req, int id)
     {
         try
         {
@@ -139,13 +136,12 @@ public class TransactionFn
         }
     }
 
+
     /// <summary>
     /// DELETE /api/transactions/{id} — Elimina una transacción.
     /// </summary>
     [Function("TransactionDelete")]
-    public async Task<IActionResult> Delete(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "transactions/{id}")] HttpRequest req,
-        int id)
+    public async Task<IActionResult> Delete([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "transactions/{id}")] HttpRequest req,int id)
     {
         try
         {
@@ -171,4 +167,6 @@ public class TransactionFn
             return new ObjectResult(new { error = "Error interno del servidor" }) { StatusCode = 500 };
         }
     }
+
+
 }
