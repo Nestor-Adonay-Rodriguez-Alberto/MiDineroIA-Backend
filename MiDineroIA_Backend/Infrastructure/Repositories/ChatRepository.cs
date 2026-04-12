@@ -31,6 +31,7 @@ public class ChatRepository : IChatRepository
     {
         return await _context.ChatMessages
             .Where(m => m.UserId == userId)
+            .Include(m => m.Transactions).ThenInclude(t => t.Category).ThenInclude(c => c.CategoryGroup)
             .OrderByDescending(m => m.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

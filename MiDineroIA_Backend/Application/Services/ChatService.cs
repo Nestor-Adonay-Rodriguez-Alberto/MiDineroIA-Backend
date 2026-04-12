@@ -334,14 +334,38 @@ public class ChatService : IChatService
     public async Task<List<ChatMessageDto>> GetHistoryAsync(int userId, int page, int pageSize)
     {
         var messages = await _chatRepository.GetHistoryAsync(userId, page, pageSize);
-        
-        return messages.Select(m => new ChatMessageDto
+
+        return messages.Select(m =>
         {
-            Id = m.Id,
-            MessageType = m.MessageType,
-            Content = m.Content,
-            ImageUrl = m.ImageUrl,
-            CreatedAt = m.CreatedAt
+            var tx = m.Transactions.FirstOrDefault();
+            TransactionInfoDto? txDto = null;
+
+            if (tx != null)
+            {
+                txDto = new TransactionInfoDto
+                {
+                    Id = tx.Id,
+                    Amount = tx.Amount,
+                    Description = tx.Description,
+                    Merchant = tx.Merchant,
+                    CategoryId = tx.CategoryId,
+                    CategoryName = tx.Category?.Name ?? string.Empty,
+                    GroupName = tx.Category?.CategoryGroup?.Name ?? string.Empty,
+                    TransactionDate = tx.TransactionDate,
+                    Source = tx.Source,
+                    IsConfirmed = tx.IsConfirmed
+                };
+            }
+
+            return new ChatMessageDto
+            {
+                Id = m.Id,
+                MessageType = m.MessageType,
+                Content = m.Content,
+                ImageUrl = m.ImageUrl,
+                CreatedAt = m.CreatedAt,
+                Transaction = txDto
+            };
         }).ToList();
     }
 

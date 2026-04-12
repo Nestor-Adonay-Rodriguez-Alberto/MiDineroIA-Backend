@@ -139,6 +139,45 @@ public record ChatMessageDto
 
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; init; }
+
+    [JsonPropertyName("transaction")]
+    public TransactionInfoDto? Transaction { get; init; }
+}
+
+/// <summary>
+/// Datos reales de la Transaction asociada a un mensaje USER_TEXT o USER_IMAGE.
+/// </summary>
+public record TransactionInfoDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; init; }
+
+    [JsonPropertyName("amount")]
+    public decimal Amount { get; init; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
+    [JsonPropertyName("merchant")]
+    public string? Merchant { get; init; }
+
+    [JsonPropertyName("category_id")]
+    public int CategoryId { get; init; }
+
+    [JsonPropertyName("category_name")]
+    public string CategoryName { get; init; } = string.Empty;
+
+    [JsonPropertyName("group_name")]
+    public string GroupName { get; init; } = string.Empty;
+
+    [JsonPropertyName("transaction_date")]
+    public DateTime TransactionDate { get; init; }
+
+    [JsonPropertyName("source")]
+    public string Source { get; init; } = string.Empty;
+
+    [JsonPropertyName("is_confirmed")]
+    public bool IsConfirmed { get; init; }
 }
 
 /// <summary>
