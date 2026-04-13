@@ -334,15 +334,27 @@ public class ChatService : IChatService
     public async Task<List<ChatMessageDto>> GetHistoryAsync(int userId, int page, int pageSize)
     {
         var messages = await _chatRepository.GetHistoryAsync(userId, page, pageSize);
-        
-        return messages.Select(m => new ChatMessageDto
+
+        var result = new List<ChatMessageDto>();
+        foreach (var m in messages)
         {
-            Id = m.Id,
-            MessageType = m.MessageType,
-            Content = m.Content,
-            ImageUrl = m.ImageUrl,
-            CreatedAt = m.CreatedAt
-        }).ToList();
+            string? imageUrl = null;
+            if (!string.IsNullOrEmpty(m.ImageUrl))
+            {
+                try { imageUrl = await _blobService.GetSasUrlAsync(m.ImageUrl); }
+                catch { imageUrl = m.ImageUrl; }
+            }
+
+            result.Add(new ChatMessageDto
+            {
+                Id = m.Id,
+                MessageType = m.MessageType,
+                Content = m.Content,
+                ImageUrl = imageUrl,
+                CreatedAt = m.CreatedAt
+            });
+        }
+        return result;
     }
 
 
