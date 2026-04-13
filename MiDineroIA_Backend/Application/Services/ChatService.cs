@@ -367,6 +367,27 @@ public class ChatService : IChatService
                 Transaction = txDto
             };
         }).ToList();
+
+        var result = new List<ChatMessageDto>();
+        foreach (var m in messages)
+        {
+            string? imageUrl = null;
+            if (!string.IsNullOrEmpty(m.ImageUrl))
+            {
+                try { imageUrl = await _blobService.GetSasUrlAsync(m.ImageUrl); }
+                catch { imageUrl = m.ImageUrl; }
+            }
+
+            result.Add(new ChatMessageDto
+            {
+                Id = m.Id,
+                MessageType = m.MessageType,
+                Content = m.Content,
+                ImageUrl = imageUrl,
+                CreatedAt = m.CreatedAt
+            });
+        }
+        return result;
     }
 
 
