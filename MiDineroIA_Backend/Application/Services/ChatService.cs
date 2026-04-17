@@ -335,7 +335,8 @@ public class ChatService : IChatService
     {
         var messages = await _chatRepository.GetHistoryAsync(userId, page, pageSize);
 
-        return messages.Select(m =>
+        var result = new List<ChatMessageDto>();
+        foreach (var m in messages)
         {
             var tx = m.Transactions.FirstOrDefault();
             TransactionInfoDto? txDto = null;
@@ -357,20 +358,6 @@ public class ChatService : IChatService
                 };
             }
 
-            return new ChatMessageDto
-            {
-                Id = m.Id,
-                MessageType = m.MessageType,
-                Content = m.Content,
-                ImageUrl = m.ImageUrl,
-                CreatedAt = m.CreatedAt,
-                Transaction = txDto
-            };
-        }).ToList();
-
-        var result = new List<ChatMessageDto>();
-        foreach (var m in messages)
-        {
             string? imageUrl = null;
             if (!string.IsNullOrEmpty(m.ImageUrl))
             {
@@ -384,7 +371,8 @@ public class ChatService : IChatService
                 MessageType = m.MessageType,
                 Content = m.Content,
                 ImageUrl = imageUrl,
-                CreatedAt = m.CreatedAt
+                CreatedAt = m.CreatedAt,
+                Transaction = txDto
             });
         }
         return result;
